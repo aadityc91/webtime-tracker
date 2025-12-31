@@ -2,6 +2,16 @@
 
 A Firefox extension for tracking time spent on websites, managing timers, taking notes, and organizing your daily schedule.
 
+## Screenshots
+
+| Tracker | Schedule | Notes |
+|---------|----------|-------|
+| ![Tracker](screenshots/tracker.png) | ![Schedule](screenshots/schedule.png) | ![Notes](screenshots/notes.png) |
+
+| Calendar | Watchlist | Portfolio |
+|----------|-----------|-----------|
+| ![Calendar](screenshots/calendar.png) | ![Watchlist](screenshots/watchlist.png) | ![Portfolio](screenshots/portfolio.png) |
+
 ## Features
 
 ### 🕐 Time Tracking
@@ -45,7 +55,7 @@ A Firefox extension for tracking time spent on websites, managing timers, taking
 ### Manual Installation (Developer Mode)
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/webtime-tracker.git
+   git clone https://github.com/aadityc91/webtime-tracker.git
    ```
 
 2. Open Firefox and navigate to `about:debugging`
