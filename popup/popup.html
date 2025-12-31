@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webtime Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Webtime Tracker</h1>
+            <button id="btn-settings" class="settings-btn" title="Settings">⚙️</button>
+        </header>
+
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="settings-panel" style="display: none;">
+            <div class="settings-header">
+                <span>Show Tabs:</span>
+                <button id="btn-close-settings" class="close-btn">×</button>
+            </div>
+            <label class="checkbox-row">
+                <input type="checkbox" data-tab="tracker" checked> Tracker
+            </label>
+            <label class="checkbox-row">
+                <input type="checkbox" data-tab="notes" checked> Notes
+            </label>
+            <label class="checkbox-row">
+                <input type="checkbox" data-tab="schedule" checked> Schedule
+            </label>
+            <label class="checkbox-row">
+                <input type="checkbox" data-tab="calendar" checked> Calendar
+            </label>
+            <label class="checkbox-row">
+                <input type="checkbox" data-tab="stocks" checked> Watchlist
+            </label>
+            <label class="checkbox-row">
+                <input type="checkbox" data-tab="portfolio" checked> Portfolio
+            </label>
+        </div>
+
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="tracker">Tracker</button>
+            <button class="tab-btn" data-tab="schedule">Schedule</button>
+            <button class="tab-btn" data-tab="notes">Notes</button>
+            <button class="tab-btn" data-tab="calendar">Calendar</button>
+            <button class="tab-btn" data-tab="stocks">Watchlist</button>
+            <button class="tab-btn" data-tab="portfolio">Portfolio</button>
+        </nav>
+
+        <!-- TRACKER TAB -->
+        <div id="tab-tracker" class="tab-content active">
+            <!-- Timer Section -->
+            <div id="timer-section" class="timer-section">
+                <!-- Timer Input (Always Visible) -->
+                <div class="timer-controls" id="timer-controls">
+                    <div class="input-group">
+                        <input type="text" id="timer-input" placeholder="Timer (e.g. 25m)" />
+                        <button id="btn-start-timer" class="action-btn small">Start</button>
+                    </div>
+                    <div class="quick-timers">
+                        <button class="chip" data-time="5m">5m</button>
+                        <button class="chip" data-time="15m">15m</button>
+                        <button class="chip" data-time="25m">25m</button>
+                    </div>
+                </div>
+
+                <!-- Active Timers List -->
+                <div id="timer-list" class="timer-list">
+                    <!-- Timer items injected here -->
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <div class="date-nav-container">
+                <button id="nav-prev" class="nav-arrow" title="Previous">◀</button>
+                <span class="date" id="current-date">Today</span>
+                <button id="nav-next" class="nav-arrow" title="Next" disabled>▶</button>
+            </div>
+
+            <div id="view-stats">
+                <div class="chart-container">
+                    <svg viewBox="0 0 36 36" class="donut-chart">
+                        <!-- Background Circle -->
+                        <path class="donut-ring"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <!-- Segments will be injected here via JS -->
+                    </svg>
+                    <div class="center-text">
+                        <div class="total-time" id="total-time">0m</div>
+                        <div class="label">Total</div>
+                    </div>
+                </div>
+
+                <div class="stats-list" id="stats-list">
+                    <!-- Items injected here -->
+                </div>
+            </div>
+
+            <div class="view-controls">
+                <button id="btn-today" class="view-btn active">Today</button>
+                <button id="btn-week" class="view-btn">Week</button>
+                <button id="btn-all-time" class="view-btn">All Time</button>
+            </div>
+        </div>
+
+        <!-- NOTES TAB -->
+        <div id="tab-notes" class="tab-content" style="display:none;">
+            <div class="notes-toolbar">
+                <button class="tool-btn" data-format="bold" title="Bold"><b>B</b></button>
+                <button class="tool-btn" data-format="italic" title="Italic"><i>I</i></button>
+                <button class="tool-btn" data-format="strikeThrough" title="Strikethrough"><s>S</s></button>
+                <button class="tool-btn" data-format="insertUnorderedList" title="List">•-</button>
+                <div class="toolbar-spacer"></div>
+                <select id="saved-notes-select" class="saved-notes-select" title="Load saved note">
+                    <option value="">📌 Saved Notes</option>
+                </select>
+                <button id="btn-update-note" class="tool-btn hidden" title="Update current note">✓</button>
+                <button id="btn-delete-note" class="tool-btn hidden" title="Delete current note">🗑</button>
+                <button id="btn-save-note-as" class="tool-btn" title="Save as new note">💾</button>
+                <button id="btn-export-notes" class="tool-btn" title="Export">↓</button>
+            </div>
+            <div id="note-editor" class="note-editor" contenteditable="true" spellcheck="true"></div>
+        </div>
+
+        <!-- CALENDAR TAB -->
+        <div id="tab-calendar" class="tab-content" style="display:none;">
+            <div class="calendar-header">
+                <button id="cal-prev" class="cal-nav-btn">&lt;</button>
+                <span id="cal-month-year">December 2025</span>
+                <button id="cal-next" class="cal-nav-btn">&gt;</button>
+            </div>
+            <div class="calendar-days-header">
+                <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+            </div>
+            <div id="calendar-grid" class="calendar-grid">
+                <!-- Days injected by JS -->
+            </div>
+            <div style="margin-top:12px; font-size:11px; color:var(--subtext-color); text-align:center;">
+                Click a date to view its stats and notes.
+            </div>
+        </div>
+        <!-- STOCKS TAB -->
+        <div id="tab-stocks" class="tab-content" style="display:none;">
+            <div class="tab-header-row">
+                <div class="input-group" style="flex:1;">
+                    <input type="text" id="stock-input" placeholder="Symbol (e.g. AAPL)"
+                        style="text-transform: uppercase;" />
+                    <button id="btn-add-stock" class="action-btn small">Add</button>
+                </div>
+                <button id="btn-refresh-stocks" class="refresh-btn" title="Refresh prices">🔄</button>
+            </div>
+
+            <div id="stock-list" class="stock-list">
+                <!-- Stocks injected here -->
+            </div>
+            <div id="stock-error" class="error-msg"
+                style="display:none; color:var(--red); font-size:11px; text-align:center; margin-top:8px;"></div>
+        </div>
+
+        <!-- PORTFOLIO TAB -->
+        <div id="tab-portfolio" class="tab-content" style="display:none;">
+            <div class="portfolio-add-section">
+                <div class="tab-header-row">
+                    <div class="input-group" style="flex:1; margin-bottom: 8px;">
+                        <input type="text" id="portfolio-symbol" placeholder="Symbol"
+                            style="flex:2; text-transform:uppercase;" />
+                        <input type="number" id="portfolio-quantity" placeholder="Qty" style="flex:1; width:60px;"
+                            min="0" step="any" />
+                        <button id="btn-add-holding" class="action-btn small">Add</button>
+                    </div>
+                    <button id="btn-refresh-portfolio" class="refresh-btn" title="Refresh prices">🔄</button>
+                </div>
+                <div class="input-group">
+                    <input type="number" id="portfolio-cash" placeholder="Cash ($)" style="flex:1;" min="0"
+                        step="0.01" />
+                    <button id="btn-set-cash" class="action-btn small">Set Cash</button>
+                </div>
+            </div>
+
+            <div id="portfolio-list" class="portfolio-list">
+                <!-- Holdings injected here -->
+            </div>
+
+            <div class="portfolio-total">
+                <span>Total Value:</span>
+                <span id="portfolio-total-value">$0.00</span>
+            </div>
+            <div id="portfolio-error" class="error-msg"
+                style="display:none; color:var(--red); font-size:11px; text-align:center;"></div>
+        </div>
+
+        <!-- SCHEDULE TAB -->
+        <div id="tab-schedule" class="tab-content" style="display:none;">
+            <div class="schedule-add-form">
+                <input type="text" id="schedule-activity-name" placeholder="Activity name" />
+                <div class="schedule-time-inputs">
+                    <input type="time" id="schedule-start-time" value="09:00" />
+                    <span>to</span>
+                    <input type="time" id="schedule-end-time" value="10:00" />
+                </div>
+                <button id="btn-add-activity" class="action-btn small">Add</button>
+            </div>
+            <div id="schedule-grid" class="schedule-grid">
+                <!-- Time grid and activities rendered here -->
+            </div>
+            <div id="schedule-summary" class="schedule-summary">
+                <!-- Time totals rendered here -->
+            </div>
+        </div>
+
+        <footer>
+            <!-- <button id="settings-btn">Settings</button> -->
+        </footer>
+    </div>
+    <script src="popup.js"></script>
+</body>
+
+</html>

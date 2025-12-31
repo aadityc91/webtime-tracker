@@ -1,0 +1,40 @@
+#webtime-tracker-overlay {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2147483647;
+    /* Max z-index */
+    background: rgba(30, 30, 46, 0.9);
+    color: #f38ba8;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+    /* Let clicks pass through */
+    transition: opacity 0.3s ease;
+    user-select: none;
+}
+
+#webtime-tracker-overlay.urgent {
+    color: #ff0000;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
