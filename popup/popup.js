@@ -1624,10 +1624,7 @@ async function renderSchedule() {
                 const newEnd = row.querySelector('.edit-end').value;
 
                 if (!newName) return;
-                if (timeToHour(newStart) >= timeToHour(newEnd)) {
-                    alert('End time must be after start time');
-                    return;
-                }
+                // Note: We allow end time <= start time for overnight blocks (e.g., 22:00 to 02:00)
 
                 await updateScheduleActivity(id, newName, newStart, newEnd);
             });
