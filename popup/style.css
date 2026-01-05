@@ -1807,15 +1807,13 @@ body {
 /* Schedule Summary */
 .schedule-summary {
     margin-top: 12px;
-    padding: 0;
-    background: transparent;
-    display: flex;
-    flex-direction: column;
-    /* Separate rows */
-    align-items: flex-start;
-    /* Align left */
-    gap: 8px;
-    /* Proper vertical spacing */
+    padding: 8px;
+    background: var(--surface0);
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    /* 3 columns per row */
+    gap: 8px 12px;
 }
 
 .schedule-summary:empty {
@@ -1823,14 +1821,16 @@ body {
 }
 
 .schedule-summary .summary-item {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 6px;
-    padding: 0;
-    border: none;
-    font-size: 18px;
+    padding: 4px 0;
+    font-size: 11px;
     font-weight: 500;
-    background: transparent !important;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .schedule-summary .summary-item .summary-dot {
@@ -1938,19 +1938,18 @@ body {
 }
 
 .timeline-actions {
-    display: none;
-    /* Hidden by default */
+    display: flex;
+    /* Always show actions container */
     gap: 4px;
     position: absolute;
     right: 4px;
     top: 50%;
     transform: translateY(-50%);
-    opacity: 0.8;
+    opacity: 0.5;
+    transition: opacity 0.2s;
 }
 
 .timeline-card:hover .timeline-actions {
-    display: flex;
-    /* Show only on hover */
     opacity: 1;
 }
 

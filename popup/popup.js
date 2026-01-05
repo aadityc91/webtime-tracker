@@ -1049,9 +1049,11 @@ async function getSavedStocks() {
 async function addStock(symbol) {
     const input = document.getElementById('stock-input');
     const errorMsg = document.getElementById('stock-error');
-    symbol = symbol.toUpperCase().trim();
+    const marketSelect = document.getElementById('stock-market');
+    const suffix = marketSelect ? marketSelect.value : '';
+    symbol = symbol.toUpperCase().trim() + suffix;
 
-    if (!symbol) return;
+    if (!symbol || symbol === suffix) return;
 
     // Check duplicate
     const current = await getSavedStocks();
@@ -1170,6 +1172,9 @@ async function renderStocks() {
         const isUp = data.change >= 0;
         const colorClass = isUp ? 'stock-up' : 'stock-down';
         const sign = isUp ? '+' : '';
+        // Determine currency based on suffix
+        const isIndian = sym.endsWith('.NS') || sym.endsWith('.BO');
+        const currency = isIndian ? '₹' : '$';
 
         const el = document.createElement('div');
         el.className = 'stock-item';
@@ -1177,7 +1182,7 @@ async function renderStocks() {
             <div class="stock-header">
                 <span class="stock-symbol">${data.symbol}</span>
             </div>
-            <div class="stock-price">${data.price.toFixed(2)}</div>
+            <div class="stock-price">${currency}${data.price.toFixed(2)}</div>
             <div class="stock-change ${colorClass}">
                 ${sign}${data.changePercent.toFixed(2)}%
             </div>
@@ -1203,9 +1208,11 @@ async function initPortfolio() {
 
     if (addBtn) {
         addBtn.addEventListener('click', async () => {
-            const symbol = symbolInput.value.toUpperCase().trim();
+            const marketSelect = document.getElementById('portfolio-market');
+            const suffix = marketSelect ? marketSelect.value : '';
+            const symbol = symbolInput.value.toUpperCase().trim() + suffix;
             const qty = parseFloat(qtyInput.value);
-            if (symbol && qty > 0) {
+            if (symbol && symbol !== suffix && qty > 0) {
                 await addHolding(symbol, qty);
                 symbolInput.value = '';
                 qtyInput.value = '';
@@ -1301,6 +1308,10 @@ async function renderPortfolio() {
         const value = price * holding.quantity;
         totalValue += value;
 
+        // Determine currency based on suffix
+        const isIndian = holding.symbol.endsWith('.NS') || holding.symbol.endsWith('.BO');
+        const currency = isIndian ? '₹' : '$';
+
         const el = document.createElement('div');
         el.className = 'portfolio-item';
         el.draggable = true;
@@ -1309,7 +1320,7 @@ async function renderPortfolio() {
             <span class="drag-handle">⠿</span>
             <span class="symbol">${holding.symbol}</span>
             <span class="quantity">× ${holding.quantity}</span>
-            <span class="value"${!stockData ? ' style="color:var(--red)"' : ''}>$${value.toFixed(2)}</span>
+            <span class="value"${!stockData ? ' style="color:var(--red)"' : ''}>${currency}${value.toFixed(2)}</span>
             <button class="delete-btn">×</button>
         `;
         el.querySelector('.delete-btn').addEventListener('click', () => removeHolding(holding.symbol));
@@ -1480,12 +1491,13 @@ async function renderSchedule() {
 
         const startStr = hourToTimeStr(activity.startHour);
         const endStr = hourToTimeStr(activity.endHour);
-        const duration = activity.endHour - activity.startHour;
+        let duration = activity.endHour - activity.startHour;
+        if (duration < 0) duration += 24; // Handle overnight activities
         const durationHrs = Math.floor(duration);
         const durationMins = Math.round((duration - durationHrs) * 60);
         let durationStr = '';
         if (durationHrs > 0) durationStr += `${durationHrs}h `;
-        if (durationMins > 0) durationStr += `${durationMins}m`;
+        if (durationMins > 0 || durationHrs === 0) durationStr += `${durationMins}m`;
 
         const isScheduled = scheduledActivityIds.includes(activity.id);
         const isFuture = activity.startHour > currentHour;
@@ -1554,6 +1566,43 @@ async function renderSchedule() {
         });
     });
 
+    // Build and render the activity time summary
+    const summaryContainer = document.getElementById('schedule-summary');
+    if (summaryContainer) {
+        const timeTotals = {};
+        activities.forEach(activity => {
+            const normalized = normalizeActivityName(activity.name);
+            let duration = activity.endHour - activity.startHour;
+            if (duration < 0) duration += 24; // Handle overnight
+
+            if (!timeTotals[normalized]) {
+                timeTotals[normalized] = {
+                    name: activity.name,
+                    color: getActivityColor(activity.name),
+                    hours: 0
+                };
+            }
+            timeTotals[normalized].hours += duration;
+        });
+
+        const summaryHtml = Object.values(timeTotals).map(item => {
+            const totalMinutes = Math.round(item.hours * 60);
+            const hours = Math.floor(totalMinutes / 60);
+            const mins = totalMinutes % 60;
+            let timeStr = '';
+            if (hours > 0) timeStr += `${hours}h `;
+            if (mins > 0 || hours === 0) timeStr += `${mins}m`;
+
+            return `<span class="summary-item">
+                <span class="summary-dot" style="background:${item.color};"></span>
+                <span>${item.name}:</span>
+                <span style="opacity:0.8">${timeStr.trim()}</span>
+            </span>`;
+        }).join('');
+
+        summaryContainer.innerHTML = summaryHtml || '<span class="summary-empty">No activities</span>';
+    }
+
 }
 
 // Helper for Timer Logic (extracted for cleaner code)
@@ -1565,10 +1614,20 @@ async function handleTimerClick(e, id, startHour, endHour, name) {
     const now = new Date();
     const currentHour = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
     let delayHours = startHour - currentHour;
-    if (delayHours < 0) delayHours += 24;
-    const delayMs = Math.round(delayHours * 3600 * 1000);
 
-    if (delayMs <= 0 || delayHours > 24) {
+    // If activity time has passed today OR is now, start immediately
+    // (delayHours < 0 means time passed, delayHours close to 0 means it's now)
+    if (delayHours < 0 || delayHours < 0.0167) { // 0.0167 hours = 1 minute tolerance
+        // Cancel any existing alarm for this activity to prevent duplicates
+        await browser.alarms.clear(`scheduledTimer_${id}`);
+
+        // Remove from scheduled_timers storage to prevent background script duplicate
+        const data = await browser.storage.local.get('scheduled_timers');
+        const scheduledTimers = data.scheduled_timers || [];
+        const filtered = scheduledTimers.filter(t => t.activityId !== id);
+        await browser.storage.local.set({ scheduled_timers: filtered });
+
+        // Start timer immediately
         switchToTab('tracker');
         const timerInput = document.getElementById('timer-input');
         if (timerInput) {
@@ -1576,6 +1635,8 @@ async function handleTimerClick(e, id, startHour, endHour, name) {
             document.querySelector('.action-btn')?.click();
         }
     } else {
+        // Schedule for future - calculate delay
+        const delayMs = Math.round(delayHours * 3600 * 1000);
         const data = await browser.storage.local.get('scheduled_timers');
         const scheduledTimers = data.scheduled_timers || [];
         const filtered = scheduledTimers.filter(t => t.activityId !== id);

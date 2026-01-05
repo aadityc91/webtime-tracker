@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webtime Tracker</title>
+    <title>TabTime</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
@@ -12,7 +12,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Webtime Tracker</h1>
+            <h1>TabTime</h1>
             <button id="btn-settings" class="settings-btn" title="Settings">⚙️</button>
         </header>
 
@@ -148,8 +148,26 @@
         <div id="tab-stocks" class="tab-content" style="display:none;">
             <div class="tab-header-row">
                 <div class="input-group" style="flex:1;">
-                    <input type="text" id="stock-input" placeholder="Symbol (e.g. AAPL)"
-                        style="text-transform: uppercase;" />
+                    <select id="stock-market" style="width:70px; font-size:11px;">
+                        <option value="">US</option>
+                        <option value=".NS">NSE 🇮🇳</option>
+                        <option value=".BO">BSE 🇮🇳</option>
+                        <option value=".L">London 🇬🇧</option>
+                        <option value=".DE">XETRA 🇩🇪</option>
+                        <option value=".F">Frankfurt 🇩🇪</option>
+                        <option value=".PA">Paris 🇫🇷</option>
+                        <option value=".T">Tokyo 🇯🇵</option>
+                        <option value=".HK">Hong Kong 🇭🇰</option>
+                        <option value=".TO">Toronto 🇨🇦</option>
+                        <option value=".AX">ASX 🇦🇺</option>
+                        <option value=".SS">Shanghai 🇨🇳</option>
+                        <option value=".SZ">Shenzhen 🇨🇳</option>
+                        <option value=".SI">Singapore 🇸🇬</option>
+                        <option value=".KS">KOSPI 🇰🇷</option>
+                        <option value=".SA">Bovespa 🇧🇷</option>
+                    </select>
+                    <input type="text" id="stock-input" placeholder="Symbol"
+                        style="text-transform: uppercase; flex:1;" />
                     <button id="btn-add-stock" class="action-btn small">Add</button>
                 </div>
                 <button id="btn-refresh-stocks" class="refresh-btn" title="Refresh prices">🔄</button>
@@ -167,6 +185,24 @@
             <div class="portfolio-add-section">
                 <div class="tab-header-row">
                     <div class="input-group" style="flex:1; margin-bottom: 8px;">
+                        <select id="portfolio-market" style="width:70px; font-size:11px;">
+                            <option value="">US</option>
+                            <option value=".NS">NSE 🇮🇳</option>
+                            <option value=".BO">BSE 🇮🇳</option>
+                            <option value=".L">London 🇬🇧</option>
+                            <option value=".DE">XETRA 🇩🇪</option>
+                            <option value=".F">Frankfurt 🇩🇪</option>
+                            <option value=".PA">Paris 🇫🇷</option>
+                            <option value=".T">Tokyo 🇯🇵</option>
+                            <option value=".HK">Hong Kong 🇭🇰</option>
+                            <option value=".TO">Toronto 🇨🇦</option>
+                            <option value=".AX">ASX 🇦🇺</option>
+                            <option value=".SS">Shanghai 🇨🇳</option>
+                            <option value=".SZ">Shenzhen 🇨🇳</option>
+                            <option value=".SI">Singapore 🇸🇬</option>
+                            <option value=".KS">KOSPI 🇰🇷</option>
+                            <option value=".SA">Bovespa 🇧🇷</option>
+                        </select>
                         <input type="text" id="portfolio-symbol" placeholder="Symbol"
                             style="flex:2; text-transform:uppercase;" />
                         <input type="number" id="portfolio-quantity" placeholder="Qty" style="flex:1; width:60px;"
