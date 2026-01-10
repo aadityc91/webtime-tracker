@@ -40,10 +40,14 @@
             <label class="checkbox-row">
                 <input type="checkbox" data-tab="portfolio" checked> Portfolio
             </label>
+            <label class="checkbox-row">
+                <input type="checkbox" data-tab="hydrate" checked> Hydrate
+            </label>
         </div>
 
         <nav class="tab-nav">
             <button class="tab-btn active" data-tab="tracker">Tracker</button>
+            <button class="tab-btn" data-tab="hydrate">Water</button>
             <button class="tab-btn" data-tab="schedule">Schedule</button>
             <button class="tab-btn" data-tab="notes">Notes</button>
             <button class="tab-btn" data-tab="calendar">Calendar</button>
@@ -184,8 +188,8 @@
         <div id="tab-portfolio" class="tab-content" style="display:none;">
             <div class="portfolio-add-section">
                 <div class="tab-header-row">
-                    <div class="input-group" style="flex:1; margin-bottom: 8px;">
-                        <select id="portfolio-market" style="width:70px; font-size:11px;">
+                    <div class="input-group" style="flex:0.7; margin-bottom: 8px;">
+                        <select id="portfolio-market" style="width:60px; font-size:11px;">
                             <option value="">US</option>
                             <option value=".NS">NSE 🇮🇳</option>
                             <option value=".BO">BSE 🇮🇳</option>
@@ -204,12 +208,14 @@
                             <option value=".SA">Bovespa 🇧🇷</option>
                         </select>
                         <input type="text" id="portfolio-symbol" placeholder="Symbol"
-                            style="flex:2; text-transform:uppercase;" />
+                            style="flex:1; text-transform:uppercase;" />
                         <input type="number" id="portfolio-quantity" placeholder="Qty" style="flex:1; width:60px;"
                             min="0" step="any" />
                         <button id="btn-add-holding" class="action-btn small">Add</button>
                     </div>
                     <button id="btn-refresh-portfolio" class="refresh-btn" title="Refresh prices">🔄</button>
+                    <button id="btn-portfolio-lock" class="lock-btn" title="Toggle privacy"
+                        style="padding:4px 6px;">🔓</button>
                 </div>
                 <div class="input-group">
                     <input type="number" id="portfolio-cash" placeholder="Cash ($)" style="flex:1;" min="0"
@@ -246,6 +252,60 @@
             </div>
             <div id="schedule-summary" class="schedule-summary">
                 <!-- Time totals rendered here -->
+            </div>
+        </div>
+
+        <!-- HYDRATE TAB -->
+        <div id="tab-hydrate" class="tab-content" style="display:none;">
+            <div class="hydrate-container">
+                <!-- Water Glass Visual -->
+                <div class="water-glass">
+                    <div class="water-fill" id="water-fill"></div>
+                    <div class="water-bubbles">
+                        <span class="bubble"></span>
+                        <span class="bubble"></span>
+                        <span class="bubble"></span>
+                    </div>
+                    <div class="glass-face">
+                        <span class="eye"></span>
+                        <span class="eye"></span>
+                        <span class="mouth">◡</span>
+                    </div>
+                </div>
+
+                <div class="hydrate-message" id="hydrate-message">Stay Hydrated! 💧</div>
+
+                <!-- Settings -->
+                <div class="hydrate-settings">
+                    <div class="hydrate-row">
+                        <label>From</label>
+                        <input type="time" id="hydrate-start" value="09:00" />
+                        <label>To</label>
+                        <input type="time" id="hydrate-end" value="18:00" />
+                    </div>
+                    <div class="hydrate-row">
+                        <label>Remind every</label>
+                        <select id="hydrate-interval">
+                            <option value="30">30 min</option>
+                            <option value="60" selected>1 hour</option>
+                            <option value="120">2 hours</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="hydrate-buttons">
+                    <button id="btn-hydrate-toggle" class="hydrate-btn">Start Reminders</button>
+                    <button id="btn-hydrate-test" class="hydrate-test-btn" title="Test notification">🔔 Test</button>
+                </div>
+
+                <!-- Stats -->
+                <div class="hydrate-stats">
+                    <div class="hydrate-stat-item">
+                        <span class="stat-value" id="glasses-today">0</span>
+                        <span class="stat-label">glasses today</span>
+                    </div>
+                    <button id="btn-drink-water" class="drink-btn" title="Log a glass">+🥛</button>
+                </div>
             </div>
         </div>
 

@@ -325,6 +325,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize Portfolio
     initPortfolio();
 
+    // Initialize Hydrate
+    initHydrate();
+
     // NOW restore last active tab (after all content is initialized)
     // Only restore if opened within 1 minute (60000ms), otherwise default to tracker
     const ONE_MINUTE = 60000;
@@ -1037,6 +1040,14 @@ async function initStocks() {
         });
     }
 
+    // Setup auto-suggest for stock input
+    setupStockAutoSuggest('stock-input', async (symbol) => {
+        // Auto-add the stock when suggestion is clicked
+        const marketSelect = document.getElementById('stock-market');
+        if (marketSelect) marketSelect.value = ''; // Clear selector since symbol includes exchange
+        await addStock(symbol); // Automatically add the selected stock
+    });
+
     // Initial render
     renderStocks();
 }
@@ -1152,6 +1163,120 @@ function getCurrencySymbol(symbol) {
     return '$'; // US default
 }
 
+// Search for stocks using Yahoo Finance API
+async function searchStocks(query) {
+    if (!query || query.length < 1) return [];
+    try {
+        const response = await fetch(`https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=6&newsCount=0`);
+        if (!response.ok) return [];
+        const data = await response.json();
+        return (data.quotes || []).filter(q => q.quoteType === 'EQUITY').map(q => ({
+            symbol: q.symbol,
+            name: q.shortname || q.longname || q.symbol,
+            exchange: q.exchange
+        }));
+    } catch (e) {
+        console.error('Stock search error:', e);
+        return [];
+    }
+}
+
+// Debounce helper
+function debounce(fn, delay) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn(...args), delay);
+    };
+}
+
+// Setup stock auto-suggest for an input element
+function setupStockAutoSuggest(inputId, onSelect) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    // Create dropdown container
+    let dropdown = document.getElementById(`${inputId}-suggestions`);
+    if (!dropdown) {
+        dropdown = document.createElement('div');
+        dropdown.id = `${inputId}-suggestions`;
+        dropdown.className = 'stock-suggestions';
+        input.parentNode.style.position = 'relative';
+        input.parentNode.appendChild(dropdown);
+    }
+
+    let selectedIndex = -1;
+
+    const showSuggestions = async (query) => {
+        if (!query || query.length < 1) {
+            dropdown.innerHTML = '';
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        const results = await searchStocks(query);
+        if (results.length === 0) {
+            dropdown.innerHTML = '';
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        selectedIndex = -1;
+        dropdown.innerHTML = results.map((r, i) => `
+            <div class="suggestion-item" data-symbol="${r.symbol}" data-index="${i}">
+                <span class="suggestion-symbol">${r.symbol}</span>
+                <span class="suggestion-name">${r.name}</span>
+            </div>
+        `).join('');
+        dropdown.style.display = 'block';
+
+        // Add click handlers
+        dropdown.querySelectorAll('.suggestion-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const symbol = item.dataset.symbol;
+                input.value = symbol;
+                dropdown.style.display = 'none';
+                if (onSelect) onSelect(symbol);
+            });
+        });
+    };
+
+    const debouncedSearch = debounce(showSuggestions, 300);
+
+    input.addEventListener('input', (e) => {
+        debouncedSearch(e.target.value.trim());
+    });
+
+    // Keyboard navigation
+    input.addEventListener('keydown', (e) => {
+        const items = dropdown.querySelectorAll('.suggestion-item');
+        if (items.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+            items.forEach((item, i) => item.classList.toggle('selected', i === selectedIndex));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedIndex = Math.max(selectedIndex - 1, 0);
+            items.forEach((item, i) => item.classList.toggle('selected', i === selectedIndex));
+        } else if (e.key === 'Enter' && selectedIndex >= 0) {
+            e.preventDefault();
+            const symbol = items[selectedIndex].dataset.symbol;
+            input.value = symbol;
+            dropdown.style.display = 'none';
+            if (onSelect) onSelect(symbol);
+        } else if (e.key === 'Escape') {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    // Hide on blur (with delay to allow click)
+    input.addEventListener('blur', () => {
+        setTimeout(() => dropdown.style.display = 'none', 200);
+    });
+}
+
 async function renderStocks() {
     const list = document.getElementById('stock-list');
     if (!list) return;
@@ -1243,6 +1368,26 @@ async function initPortfolio() {
         });
     }
 
+    // Setup auto-suggest for portfolio symbol input
+    setupStockAutoSuggest('portfolio-symbol', (symbol) => {
+        // Clear market selector since symbol includes exchange, then focus quantity input
+        const marketSelect = document.getElementById('portfolio-market');
+        if (marketSelect) marketSelect.value = '';
+        const qtyInput = document.getElementById('portfolio-quantity');
+        if (qtyInput) qtyInput.focus(); // Focus quantity for quick entry
+    });
+
+    // Lock/unlock toggle for privacy
+    const lockBtn = document.getElementById('btn-portfolio-lock');
+    if (lockBtn) {
+        lockBtn.addEventListener('click', () => {
+            portfolioLocked = !portfolioLocked;
+            lockBtn.textContent = portfolioLocked ? '🔒' : '🔓';
+            lockBtn.title = portfolioLocked ? 'Show values' : 'Hide values';
+            renderPortfolio();
+        });
+    }
+
     // Initial render
     renderPortfolio();
 }
@@ -1301,6 +1446,9 @@ async function reorderPortfolio(fromIndex, toIndex) {
     renderPortfolio();
 }
 
+// Portfolio privacy lock state
+let portfolioLocked = false;
+
 async function renderPortfolio() {
     const list = document.getElementById('portfolio-list');
     const totalEl = document.getElementById('portfolio-total-value');
@@ -1331,11 +1479,16 @@ async function renderPortfolio() {
         el.className = 'portfolio-item';
         el.draggable = true;
         el.dataset.index = i;
+
+        // Mask values when locked
+        const displayQty = portfolioLocked ? '****' : holding.quantity;
+        const displayValue = portfolioLocked ? '****' : `${currency}${value.toFixed(2)}`;
+
         el.innerHTML = `
             <span class="drag-handle">⠿</span>
             <span class="symbol">${holding.symbol}</span>
-            <span class="quantity">× ${holding.quantity}</span>
-            <span class="value"${!stockData ? ' style="color:var(--red)"' : ''}>${currency}${value.toFixed(2)}</span>
+            <span class="quantity">× ${displayQty}</span>
+            <span class="value"${!stockData ? ' style="color:var(--red)"' : ''}>${displayValue}</span>
             <button class="delete-btn">×</button>
         `;
         el.querySelector('.delete-btn').addEventListener('click', () => removeHolding(holding.symbol));
@@ -1373,10 +1526,11 @@ async function renderPortfolio() {
         totalValue += cash;
         const cashEl = document.createElement('div');
         cashEl.className = 'portfolio-item portfolio-cash-item';
+        const displayCash = portfolioLocked ? '****' : `$${cash.toFixed(2)}`;
         cashEl.innerHTML = `
             <span class="symbol">💵 Cash</span>
             <span class="quantity"></span>
-            <span class="value">$${cash.toFixed(2)}</span>
+            <span class="value">${displayCash}</span>
             <button class="delete-btn" title="Clear cash">×</button>
         `;
         cashEl.querySelector('.delete-btn').addEventListener('click', async () => {
@@ -1394,7 +1548,8 @@ async function renderPortfolio() {
     // Update total with dominant currency (if all holdings share one currency, use it)
     const currencies = Object.keys(currencyCounts);
     const totalCurrency = (currencies.length === 1) ? currencies[0] : '$';
-    totalEl.textContent = `${totalCurrency}${totalValue.toFixed(2)}`;
+    const displayTotal = portfolioLocked ? '****' : `${totalCurrency}${totalValue.toFixed(2)}`;
+    totalEl.textContent = displayTotal;
 }
 
 // ---------------------------------------------------------
@@ -1868,3 +2023,128 @@ document.getElementById('btn-add-activity')?.addEventListener('click', async () 
 document.querySelector('.tab-btn[data-tab="schedule"]')?.addEventListener('click', () => {
     setTimeout(renderSchedule, 100);
 });
+
+// ---------------------------------------------------------
+// HYDRATE TAB LOGIC
+// ---------------------------------------------------------
+
+async function initHydrate() {
+    const toggleBtn = document.getElementById('btn-hydrate-toggle');
+    const drinkBtn = document.getElementById('btn-drink-water');
+    const startInput = document.getElementById('hydrate-start');
+    const endInput = document.getElementById('hydrate-end');
+    const intervalSelect = document.getElementById('hydrate-interval');
+
+    // Load saved settings
+    const data = await browser.storage.local.get(['hydrate_settings', 'hydrate_active', 'glasses_today', 'glasses_date']);
+
+    if (data.hydrate_settings) {
+        startInput.value = data.hydrate_settings.start || '09:00';
+        endInput.value = data.hydrate_settings.end || '18:00';
+        intervalSelect.value = data.hydrate_settings.interval || '60';
+    }
+
+    // Reset glasses count if it's a new day
+    const today = new Date().toDateString();
+    let glassesToday = data.glasses_today || 0;
+    if (data.glasses_date !== today) {
+        glassesToday = 0;
+        await browser.storage.local.set({ glasses_today: 0, glasses_date: today });
+    }
+
+    updateGlassesDisplay(glassesToday);
+    updateHydrateUI(data.hydrate_active);
+
+    // Toggle reminders
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', async () => {
+            const currentData = await browser.storage.local.get('hydrate_active');
+            const isActive = !currentData.hydrate_active;
+
+            // Save settings
+            const settings = {
+                start: startInput.value,
+                end: endInput.value,
+                interval: intervalSelect.value
+            };
+            await browser.storage.local.set({
+                hydrate_settings: settings,
+                hydrate_active: isActive
+            });
+
+            if (isActive) {
+                // Create recurring alarm
+                const intervalMinutes = parseInt(intervalSelect.value);
+                await browser.alarms.create('hydrateReminder', {
+                    delayInMinutes: intervalMinutes,
+                    periodInMinutes: intervalMinutes
+                });
+            } else {
+                await browser.alarms.clear('hydrateReminder');
+            }
+
+            updateHydrateUI(isActive);
+        });
+    }
+
+    // Log a glass of water
+    if (drinkBtn) {
+        drinkBtn.addEventListener('click', async () => {
+            const data = await browser.storage.local.get(['glasses_today', 'glasses_date']);
+            const today = new Date().toDateString();
+            let glasses = data.glasses_date === today ? (data.glasses_today || 0) : 0;
+            glasses++;
+            await browser.storage.local.set({ glasses_today: glasses, glasses_date: today });
+            updateGlassesDisplay(glasses);
+
+            // Animate the water fill
+            const fill = document.getElementById('water-fill');
+            if (fill) {
+                fill.style.height = Math.min(10 + glasses * 10, 90) + '%';
+            }
+        });
+    }
+
+    // Test notification button
+    const testBtn = document.getElementById('btn-hydrate-test');
+    if (testBtn) {
+        testBtn.addEventListener('click', async () => {
+            testBtn.textContent = '⏳';
+
+            // Send message to background, don't wait for response
+            browser.runtime.sendMessage({ type: 'testHydrateNotification' });
+
+            // Show success and also show alert as backup
+            testBtn.textContent = '✓ Sent!';
+            setTimeout(() => testBtn.textContent = '🔔 Test', 2000);
+
+            // Show alert as a backup notification method
+            alert('💧 Time to Hydrate!\n\nTake a moment to drink some water. Stay healthy!');
+        });
+    }
+}
+
+function updateGlassesDisplay(count) {
+    const el = document.getElementById('glasses-today');
+    if (el) el.textContent = count;
+
+    // Update water fill based on glasses (max 8 glasses = full)
+    const fill = document.getElementById('water-fill');
+    if (fill) {
+        fill.style.height = Math.min(10 + count * 10, 90) + '%';
+    }
+}
+
+function updateHydrateUI(isActive) {
+    const toggleBtn = document.getElementById('btn-hydrate-toggle');
+    const message = document.getElementById('hydrate-message');
+
+    if (toggleBtn) {
+        toggleBtn.textContent = isActive ? 'Stop Reminders' : 'Start Reminders';
+        toggleBtn.classList.toggle('active', isActive);
+    }
+
+    if (message) {
+        message.textContent = isActive ? 'Reminders Active! 💧' : 'Stay Hydrated! 💧';
+    }
+}

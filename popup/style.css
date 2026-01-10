@@ -994,7 +994,7 @@ body {
 .tab-header-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     margin-bottom: 12px;
     margin-top: 4px;
 }
@@ -1122,6 +1122,7 @@ body {
 /* Portfolio */
 .portfolio-add-section {
     margin-bottom: 12px;
+    padding-right: 4px;
 }
 
 .portfolio-list {
@@ -1985,4 +1986,344 @@ body {
     z-index: 3;
     box-shadow: 0 0 0 2px rgba(137, 180, 250, 0.3);
     pointer-events: none;
+}
+
+/* Stock Auto-Suggest Dropdown */
+.stock-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface0);
+    border: 1px solid var(--surface1);
+    border-radius: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    margin-top: 4px;
+}
+
+.suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--surface1);
+    transition: background 0.15s ease;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover,
+.suggestion-item.selected {
+    background: var(--surface1);
+}
+
+.suggestion-symbol {
+    font-weight: 600;
+    color: var(--accent-color);
+    min-width: 80px;
+    font-size: 12px;
+}
+
+.suggestion-name {
+    color: var(--subtext-color);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Portfolio Lock Button */
+.lock-btn {
+    background: var(--surface0);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.lock-btn:hover {
+    background: var(--surface1);
+}
+
+/* =============================================
+   HYDRATE TAB
+   ============================================= */
+
+.hydrate-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    gap: 10px;
+}
+
+/* Water Glass Visual */
+.water-glass {
+    width: 70px;
+    height: 85px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+    border: 3px solid rgba(137, 180, 250, 0.6);
+    border-radius: 0 0 20px 20px;
+    border-top: none;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        inset 0 0 20px rgba(137, 180, 250, 0.2),
+        0 8px 32px rgba(137, 180, 250, 0.2);
+}
+
+.water-glass::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -3px;
+    right: -3px;
+    height: 12px;
+    background: rgba(137, 180, 250, 0.4);
+    border-radius: 8px 8px 0 0;
+    border: 3px solid rgba(137, 180, 250, 0.6);
+    border-bottom: none;
+}
+
+.water-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    background: linear-gradient(180deg, #89dceb 0%, #74c7ec 50%, #89b4fa 100%);
+    border-radius: 0 0 17px 17px;
+    transition: height 0.5s ease;
+    animation: waterWave 2s ease-in-out infinite;
+}
+
+@keyframes waterWave {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+/* Bubbles */
+.water-bubbles {
+    position: absolute;
+    bottom: 10%;
+    left: 0;
+    right: 0;
+    height: 50%;
+    pointer-events: none;
+}
+
+.bubble {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: bubbleRise 3s ease-in-out infinite;
+}
+
+.bubble:nth-child(1) {
+    left: 20%;
+    animation-delay: 0s;
+}
+
+.bubble:nth-child(2) {
+    left: 50%;
+    animation-delay: 1s;
+    width: 6px;
+    height: 6px;
+}
+
+.bubble:nth-child(3) {
+    left: 75%;
+    animation-delay: 2s;
+    width: 5px;
+    height: 5px;
+}
+
+@keyframes bubbleRise {
+    0% {
+        bottom: 0;
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        bottom: 100%;
+        opacity: 0;
+    }
+}
+
+/* Cute Face */
+.glass-face {
+    position: absolute;
+    bottom: 25%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    z-index: 2;
+}
+
+.glass-face .eye {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #313244;
+    border-radius: 50%;
+    margin: 0 8px;
+}
+
+.glass-face .mouth {
+    font-size: 14px;
+    color: #313244;
+    margin-top: 2px;
+}
+
+/* Message */
+.hydrate-message {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-color);
+    text-align: center;
+}
+
+/* Settings */
+.hydrate-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.hydrate-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.hydrate-row label {
+    font-size: 12px;
+    color: var(--subtext-color);
+}
+
+.hydrate-row input[type="time"],
+.hydrate-row select {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--surface1);
+    background: var(--surface0);
+    color: var(--text-color);
+    font-size: 11px;
+}
+
+/* Start/Stop Button */
+.hydrate-btn {
+    padding: 8px 24px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #89b4fa 0%, #74c7ec 100%);
+    color: #1e1e2e;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(137, 180, 250, 0.3);
+}
+
+.hydrate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(137, 180, 250, 0.4);
+}
+
+.hydrate-btn.active {
+    background: linear-gradient(135deg, #f38ba8 0%, #fab387 100%);
+}
+
+.hydrate-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.hydrate-test-btn {
+    padding: 8px 12px;
+    font-size: 11px;
+    border: none;
+    border-radius: 15px;
+    background: var(--surface1);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.hydrate-test-btn:hover {
+    background: var(--accent-color);
+    color: var(--bg-color);
+}
+
+/* Stats */
+.hydrate-stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background: var(--surface0);
+    border-radius: 10px;
+}
+
+.hydrate-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.stat-label {
+    font-size: 11px;
+    color: var(--subtext-color);
+}
+
+.drink-btn {
+    padding: 8px 16px;
+    font-size: 16px;
+    border: none;
+    border-radius: 20px;
+    background: var(--surface1);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.drink-btn:hover {
+    background: var(--accent-color);
+    color: var(--bg-color);
 }

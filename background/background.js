@@ -487,5 +487,50 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
       const remaining = scheduledTimers.filter(t => t.activityId !== activityId);
       await browser.storage.local.set({ scheduled_timers: remaining });
     }
+  } else if (alarm.name === 'hydrateReminder') {
+    // Handle hydrate reminder
+    const data = await browser.storage.local.get(['hydrate_settings', 'hydrate_active']);
+
+    if (!data.hydrate_active) return;
+
+    const settings = data.hydrate_settings || {};
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+
+    // Parse start and end times
+    const [startH, startM] = (settings.start || '09:00').split(':').map(Number);
+    const [endH, endM] = (settings.end || '18:00').split(':').map(Number);
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    // Only notify if within time window
+    if (currentTime >= startMinutes && currentTime <= endMinutes) {
+      browser.notifications.create('hydrateNotification', {
+        type: 'basic',
+        iconUrl: 'icons/icon-48.png',
+        title: '💧 Time to Hydrate!',
+        message: 'Take a moment to drink some water. Stay healthy!'
+      });
+    }
+  }
+});
+
+// Listen for messages from popup
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'testHydrateNotification') {
+    const iconUrl = browser.runtime.getURL('icons/icon-48.png');
+    browser.notifications.create('hydrateTest_' + Date.now(), {
+      type: 'basic',
+      iconUrl: iconUrl,
+      title: '💧 Time to Hydrate!',
+      message: 'Take a moment to drink some water. Stay healthy!'
+    }).then((notificationId) => {
+      console.log('Notification created:', notificationId);
+      sendResponse({ success: true, id: notificationId });
+    }).catch((err) => {
+      console.error('Notification error:', err);
+      sendResponse({ success: false, error: String(err) });
+    });
+    return true; // Keep message channel open for async response
   }
 });
