@@ -15,10 +15,7 @@
  * @version 1.0.0
  */
 
-// Browser API compatibility shim (Chrome uses 'chrome', Firefox uses 'browser')
-if (typeof browser === 'undefined') {
-    var browser = chrome;
-}
+
 
 const formatTime = (seconds) => {
     const s = Math.floor(seconds % 60);

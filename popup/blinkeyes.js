@@ -3,10 +3,6 @@
  * Handles eye strain reminders with countdown timer and visual feedback
  */
 
-// Browser API compatibility shim (Chrome uses 'chrome', Firefox uses 'browser')
-if (typeof browser === 'undefined') {
-    var browser = chrome;
-}
 
 // ---------------------------------------------------------
 // EYEBLINK TAB LOGIC

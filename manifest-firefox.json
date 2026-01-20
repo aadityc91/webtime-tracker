@@ -16,6 +16,7 @@
     ],
     "background": {
         "scripts": [
+            "lib/browser-polyfill.js",
             "background/background.js"
         ]
     },
@@ -28,6 +29,7 @@
                 "content/overlay.css"
             ],
             "js": [
+                "lib/browser-polyfill.js",
                 "content/overlay.js"
             ]
         }

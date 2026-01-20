@@ -1,8 +1,3 @@
-// Browser API compatibility shim (Chrome uses 'chrome', Firefox uses 'browser')
-if (typeof browser === 'undefined') {
-    var browser = chrome;
-}
-
 let overlay = null;
 let timerInterval = null;
 let currentTimerId = null;

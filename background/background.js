@@ -3,10 +3,14 @@
  * Handles time tracking, tab switching, and data storage.
  */
 
-// Browser API compatibility shim (Chrome uses 'chrome', Firefox uses 'browser')
-if (typeof browser === 'undefined') {
-  globalThis.browser = chrome;
+try {
+  // Load polyfill for Chrome Service Worker (which doesn't support 'scripts' in manifest)
+  importScripts('../lib/browser-polyfill.js');
+} catch (e) {
+  // In Firefox (Background Script), the polyfill is loaded via manifest.json, so this error is expected and ignored.
 }
+
+
 
 // State
 let currentDomain = null;
@@ -518,10 +522,8 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
         message: 'Take a moment to drink some water. Stay healthy!'
       });
 
-      // Auto-dismiss after 5 seconds
-      setTimeout(() => {
-        browser.notifications.clear(notificationId).catch(() => { });
-      }, 5000);
+      // Auto-dismiss removed for Service Worker reliability
+      // Let the OS or user handle dismissal
     }
   } else if (alarm.name === 'eyeblinkReminder') {
     // Handle blink eyes reminder
@@ -532,7 +534,7 @@ browser.alarms.onAlarm.addListener(async (alarm) => {
     // Send message to active tab to show overlay
     try {
       const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-      if (tabs.length > 0 && tabs[0].id) {
+      if (tabs.length > 0 && tabs[0].id && tabs[0].url && (tabs[0].url.startsWith('http') || tabs[0].url.startsWith('file'))) {
         browser.tabs.sendMessage(tabs[0].id, { type: 'showEyeBlinkOverlay' }).catch(() => { });
       }
     } catch (e) {
@@ -559,10 +561,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
         // Popup may have closed
       }
 
-      // Auto-dismiss after 5 seconds
-      setTimeout(() => {
-        browser.notifications.clear(notificationId).catch(() => { });
-      }, 5000);
+      // Auto-dismiss removed for Service Worker reliability
     }).catch((err) => {
       console.error('Notification error:', err);
       try {
@@ -575,7 +574,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.type === 'testEyeBlinkNotification') {
     // Send message to active tab to show overlay
     browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
-      if (tabs.length > 0 && tabs[0].id) {
+      if (tabs.length > 0 && tabs[0].id && tabs[0].url && (tabs[0].url.startsWith('http') || tabs[0].url.startsWith('file'))) {
         browser.tabs.sendMessage(tabs[0].id, { type: 'showEyeBlinkOverlay' }).catch(() => { });
       }
       try {

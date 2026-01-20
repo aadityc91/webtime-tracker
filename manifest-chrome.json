@@ -26,6 +26,7 @@
                 "content/overlay.css"
             ],
             "js": [
+                "lib/browser-polyfill.js",
                 "content/overlay.js"
             ]
         }

@@ -10,7 +10,7 @@ echo "📦 Building for Chrome..."
 # Create temporary chrome dir
 mkdir -p dist/chrome
 # Copy all files
-cp -r background content icons popup LICENSE README.md dist/chrome/
+cp -r background content icons popup lib LICENSE README.md dist/chrome/
 # Copy Chrome manifest
 cp manifest-chrome.json dist/chrome/manifest.json
 # Zip it
@@ -23,7 +23,7 @@ echo "📦 Building for Firefox..."
 # Create temporary firefox dir
 mkdir -p dist/firefox
 # Copy all files
-cp -r background content icons popup LICENSE README.md dist/firefox/
+cp -r background content icons popup lib LICENSE README.md dist/firefox/
 # Copy Firefox manifest
 cp manifest-firefox.json dist/firefox/manifest.json
 # Zip it
