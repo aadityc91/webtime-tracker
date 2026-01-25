@@ -3,14 +3,6 @@
  * Handles time tracking, tab switching, and data storage.
  */
 
-try {
-  // Load polyfill for Chrome Service Worker (which doesn't support 'scripts' in manifest)
-  importScripts('../lib/browser-polyfill.js');
-} catch (e) {
-  // In Firefox (Background Script), the polyfill is loaded via manifest.json, so this error is expected and ignored.
-}
-
-
 
 // State
 let currentDomain = null;
